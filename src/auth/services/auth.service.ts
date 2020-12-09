@@ -2,6 +2,7 @@ import { Injectable, HttpException } from "@nestjs/common";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import * as _ from "lodash";
+import * as bcrypt from "bcryptjs";
 import {
 	RegisterInterface,
 	LoginInterface,
@@ -27,6 +28,20 @@ export class AuthService {
 		]);
 	}
 
+	private async hashPassword(password: string): Promise<string> {
+		const salt = await bcrypt.genSalt(14);
+		const hash = await bcrypt.hash(password, salt);
+		return hash;
+	}
+
+	private async isPasswordValid(
+		password: string,
+		originalPassword: string
+	): Promise<boolean> {
+		const comparePwd = await bcrypt.compare(password, originalPassword);
+		return comparePwd;
+	}
+
 	async login({ email, password }: LoginInterface): Promise<any> {
 		try {
 			const user = await this.userModel.findOne({ email }).lean();
@@ -34,7 +49,11 @@ export class AuthService {
 				return Promise.reject(
 					new HttpException("User not found.", BAD_REQUEST)
 				);
-			if (password !== user.password)
+			const isValidPassword = await this.isPasswordValid(
+				password,
+				user.password
+			);
+			if (!isValidPassword)
 				return Promise.reject(
 					new HttpException("Invalid password.", BAD_REQUEST)
 				);
@@ -56,7 +75,9 @@ export class AuthService {
 				return Promise.reject(
 					new HttpException("Email already registered.", BAD_REQUEST)
 				);
-
+			registerInterface.password = await this.hashPassword(
+				registerInterface.password
+			);
 			user = await this.userModel.create(registerInterface);
 			return Promise.resolve(this.sanitiseUser(user));
 		} catch (error) {
