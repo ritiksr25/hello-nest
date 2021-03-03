@@ -1,27 +1,26 @@
 import {
 	IsString,
 	IsEmail,
-	IsDefined,
 	IsOptional,
-	MinLength
+	MinLength,
+	IsEnum
 } from "class-validator";
+import { Errors, Roles } from "src/common/enums";
+import { getMissingFieldError } from "src/utils/utils.helper";
 
 export class RegisterDto {
-	@IsString()
-	@IsEmail()
-	@IsDefined()
+	@IsString({ message: getMissingFieldError("email") })
+	@IsEmail({}, { message: getMissingFieldError("email") })
 	readonly email: string;
 
-	@IsString()
-	@IsDefined()
+	@IsString({ message: getMissingFieldError("name") })
 	readonly name: string;
 
-	@IsString()
-	@IsDefined()
-	@MinLength(8)
+	@IsString({ message: Errors.invalid_pwd })
+	@MinLength(8, { message: Errors.invalid_pwd })
 	readonly password: string;
 
-	@IsString()
 	@IsOptional()
-	readonly role: string;
+	@IsEnum(Roles, { message: getMissingFieldError("role") })
+	readonly role?: string;
 }
