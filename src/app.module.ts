@@ -11,8 +11,9 @@ import jwtConfig from "./config/jwt.config";
 
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { AuthModule } from "./auth/auth.module";
+// import { AuthModule } from "./auth/auth.module";
 import { UtilsModule } from "./utils/utils.module";
+import { TodoModule } from "./todo/todo.module";
 @Module({
 	imports: [
 		ConfigModule.forRoot({
@@ -27,7 +28,8 @@ import { UtilsModule } from "./utils/utils.module";
 			})
 		}),
 		UtilsModule,
-		AuthModule
+		// AuthModule,
+		TodoModule
 	],
 	controllers: [AppController],
 	providers: [
